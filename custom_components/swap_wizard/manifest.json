@@ -4,10 +4,10 @@
   "codeowners": [],
   "config_flow": true,
   "dependencies": ["http", "frontend", "panel_custom", "websocket_api"],
-  "documentation": "https://github.com/Semper79/swap_wizard",
+  "documentation": "https://github.com/Semper79/HA.SwapWizard",
   "integration_type": "service",
   "iot_class": "calculated",
-  "issue_tracker": "https://github.com/Semper79/swap_wizard/issues",
+  "issue_tracker": "https://github.com/Semper79/HA.SwapWizard/issues",
   "requirements": [],
   "single_config_entry": true,
   "version": "0.2.0"

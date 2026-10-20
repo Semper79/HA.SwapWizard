@@ -1,5 +1,7 @@
 # Swap Wizard
 
+![Validate](https://github.com/Semper79/HA.SwapWizard/actions/workflows/validate.yml/badge.svg) ![Tests](https://github.com/Semper79/HA.SwapWizard/actions/workflows/tests.yml/badge.svg) ![Licenza MIT](https://img.shields.io/badge/licenza-MIT-blue)
+
 Pannello per Home Assistant che sostituisce **un telefono, un dispositivo o una singola entità** in tutte le automazioni, script e scene **e nei flow di Node-RED**, con **backup**, **registro di ogni modifica** e **rollback completo**.
 
 Nato per il caso «ho cambiato telefono e le notifiche puntano ancora al vecchio», ma funziona anche per un sensore guasto sostituito da uno nuovo.
@@ -73,7 +75,12 @@ Il backup di Swap Wizard copre **solo i file toccati**. Non sostituisce il backu
 ## Installazione
 
 ### Con HACS
-1. HACS → ⋮ → *Repository personalizzati* → incolla `https://github.com/Semper79/swap_wizard`, categoria **Integrazione**.
+
+[![Aggiungi a HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Semper79&repository=HA.SwapWizard&category=integration)
+
+Il pulsante apre il tuo Home Assistant sulla pagina del repository. Oppure a mano:
+
+1. HACS → ⋮ → *Repository personalizzati* → incolla `https://github.com/Semper79/HA.SwapWizard`, categoria **Integrazione**.
 2. Scarica *Swap Wizard* e riavvia Home Assistant.
 3. *Impostazioni → Dispositivi e servizi → Aggiungi integrazione → Swap Wizard*.
 4. Compare **Swap Wizard** nel menu laterale (solo per amministratori).
