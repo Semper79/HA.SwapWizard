@@ -38,6 +38,16 @@ const ok = (c, m) => { if (!c) { console.error("FAIL:", m); process.exit(1); } c
 (async () => {
   await sleep(30);
   ok(q("[data-action=propose]"), "passo 1 disegnato");
+  await click("[data-action=mode][data-v=entity]");
+  const oe = q("input[data-bind=oldEnt]");
+  oe.dispatchEvent(new w.FocusEvent("focusin", { bubbles: true }));
+  ok(el.shadowRoot.querySelectorAll(".sugg li[data-v]").length === 2, "elenco entità proposto al clic");
+  oe.value = "sensor.b"; oe.dispatchEvent(new w.Event("input", { bubbles: true }));
+  const li = q(".sugg li[data-v]");
+  ok(li && li.dataset.v === "sensor.b", "elenco filtrato mentre scrivi");
+  li.dispatchEvent(new w.MouseEvent("mousedown", { bubbles: true, cancelable: true }));
+  ok(oe.value === "sensor.b" && el._s.oldEnt === "sensor.b", "scelta dall'elenco salvata");
+  await click("[data-action=mode][data-v=phone]");
   const sels = el.shadowRoot.querySelectorAll("select");
   sels[0].value = "d1"; sels[0].dispatchEvent(new w.Event("change", { bubbles: true })); await sleep(5);
   const sels2 = el.shadowRoot.querySelectorAll("select");

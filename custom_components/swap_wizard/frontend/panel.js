@@ -79,6 +79,14 @@ h3 { margin:16px 0 8px; font-size:15px; font-weight:500; }
 label.f { display:block; font-size:13px; color:var(--secondary-text-color); margin-bottom:4px; }
 select, input[type=text] { width:100%; padding:10px; border-radius:8px; border:1px solid var(--divider-color);
   background:var(--card-background-color); color:var(--primary-text-color); font:inherit; }
+.sg { position:relative; }
+.sugg { position:absolute; left:0; right:0; top:100%; z-index:20; margin:2px 0 0; padding:4px 0; list-style:none; max-height:260px; overflow:auto;
+  background:var(--card-background-color); border:1px solid var(--divider-color); border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,.25); }
+.sugg[hidden] { display:none; }
+.sugg li { padding:6px 10px; cursor:pointer; font-size:13px; display:flex; flex-direction:column; }
+.sugg li:hover, .sugg li.on { background:var(--secondary-background-color); }
+.sugg li small { color:var(--secondary-text-color); font-size:11px; }
+.sugg li.none { cursor:default; color:var(--secondary-text-color); }
 .hint { font-size:12px; color:var(--secondary-text-color); margin-top:4px; }
 .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:16px; }
 .spacer { flex:1; }
@@ -138,6 +146,36 @@ class SwapWizardPanel extends HTMLElement {
     };
     this.shadowRoot.addEventListener("input", onField);
     this.shadowRoot.addEventListener("change", onField);
+    this.shadowRoot.addEventListener("input", (e) => this._suggest(e.target));
+    this.shadowRoot.addEventListener("focusin", (e) => this._suggest(e.target));
+    this.shadowRoot.addEventListener("focusout", (e) => { const u = e.target.closest?.(".sg")?.querySelector(".sugg"); if (u) u.hidden = true; });
+    this.shadowRoot.addEventListener("mousedown", (e) => {
+      const li = e.target.closest?.(".sugg li[data-v]");
+      if (!li) return;
+      e.preventDefault();
+      const box = li.closest(".sg"), inp = box.querySelector("input");
+      inp.value = li.dataset.v;
+      box.querySelector(".sugg").hidden = true;
+      this._bind(inp, true);
+    });
+  }
+
+  _suggest(el) {
+    if (!el || !el.dataset || el.dataset.suggest === undefined) return;
+    const ul = el.closest(".sg")?.querySelector(".sugg");
+    if (!ul) return;
+    const q = el.value.trim().toLowerCase();
+    const st = this._hass?.states || {};
+    const out = [];
+    for (const id of Object.keys(st).sort()) {
+      const name = st[id]?.attributes?.friendly_name || "";
+      if (!q || id.toLowerCase().includes(q) || name.toLowerCase().includes(q)) {
+        out.push(`<li data-v="${esc(id)}">${esc(id)}${name ? `<small>${esc(name)}</small>` : ""}</li>`);
+        if (out.length >= 40) break;
+      }
+    }
+    ul.innerHTML = out.length ? out.join("") : `<li class="none">Nessuna entità trovata: puoi scriverla a mano</li>`;
+    ul.hidden = false;
   }
 
   _initial() {
@@ -399,14 +437,13 @@ class SwapWizardPanel extends HTMLElement {
     if (s.devices === null) {
       form = `<p class="sub"><span class="spin"></span>Leggo i dispositivi…</p>`;
     } else if (s.mode === "entity") {
-      const ids = Object.keys(this._hass?.states || {}).sort();
-      form = `<datalist id="ents">${ids.map((i) => `<option value="${esc(i)}"></option>`).join("")}</datalist>
+      form = `
         <div class="grid2">
           <div><label class="f">Entità vecchia (guasta o da sostituire)</label>
-            <input type="text" list="ents" data-bind="oldEnt" value="${esc(s.oldEnt)}" placeholder="sensor.sensore_guasto" autocomplete="off"/>
+            <div class="sg"><input type="text" data-suggest data-bind="oldEnt" value="${esc(s.oldEnt)}" placeholder="Scrivi o scegli: sensor.sensore_guasto" autocomplete="off"/><ul class="sugg" hidden></ul></div>
             <div class="hint">Puoi anche scriverla a mano se non esiste più.</div></div>
           <div><label class="f">Entità nuova</label>
-            <input type="text" list="ents" data-bind="newEnt" value="${esc(s.newEnt)}" placeholder="sensor.sensore_nuovo" autocomplete="off"/></div>
+            <div class="sg"><input type="text" data-suggest data-bind="newEnt" value="${esc(s.newEnt)}" placeholder="Scrivi o scegli: sensor.sensore_nuovo" autocomplete="off"/><ul class="sugg" hidden></ul></div></div>
         </div>`;
     } else {
       const list = s.devices.filter((d) => (s.mode === "phone" ? d.mobile : true));
@@ -465,8 +502,8 @@ class SwapWizardPanel extends HTMLElement {
       <div class="grid2" style="grid-template-columns:140px 1fr 1fr auto;align-items:end">
         <div><label class="f">Tipo</label><select data-bind="manual.kind" data-rerender="0">
           ${Object.entries(KIND).map(([k, v]) => `<option value="${k}" ${s.manual.kind === k ? "selected" : ""}>${v}</option>`).join("")}</select></div>
-        <div><label class="f">Vecchio</label><input type="text" data-bind="manual.old" value="${esc(s.manual.old)}" placeholder="sensor.vecchio"/></div>
-        <div><label class="f">Nuovo</label><input type="text" data-bind="manual.new" value="${esc(s.manual.new)}" placeholder="sensor.nuovo"/></div>
+        <div><label class="f">Vecchio</label><div class="sg"><input type="text" ${s.manual.kind === "entity" ? "data-suggest" : ""} data-bind="manual.old" value="${esc(s.manual.old)}" placeholder="sensor.vecchio" autocomplete="off"/><ul class="sugg" hidden></ul></div></div>
+        <div><label class="f">Nuovo</label><div class="sg"><input type="text" ${s.manual.kind === "entity" ? "data-suggest" : ""} data-bind="manual.new" value="${esc(s.manual.new)}" placeholder="sensor.nuovo" autocomplete="off"/><ul class="sugg" hidden></ul></div></div>
         <button class="b sec" data-action="addrow">Aggiungi</button>
       </div>
       ${s.branch === "nodered" ? this._noderedFolder() : `<div class="cb"><input type="checkbox" id="dash" data-bind="includeDash" ${s.includeDash ? "checked" : ""}/><label for="dash">Cerca anche nelle dashboard salvate dall'interfaccia (richiede un riavvio di Home Assistant)</label></div>`}
