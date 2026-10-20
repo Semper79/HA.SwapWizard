@@ -2,6 +2,7 @@
   "domain": "swap_wizard",
   "name": "Swap Wizard",
   "codeowners": [],
+  "categories": ["helpers"],
   "config_flow": true,
   "dependencies": ["http", "frontend", "panel_custom", "websocket_api"],
   "documentation": "https://github.com/Semper79/HA.SwapWizard",
