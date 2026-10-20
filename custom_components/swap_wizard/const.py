@@ -1,7 +1,7 @@
 """Costanti di Swap Wizard."""
 
 DOMAIN = "swap_wizard"
-VERSION = "0.2.1"
+VERSION = "0.2.2"
 
 PANEL_URL_PATH = "swap-wizard"
 PANEL_WEBCOMPONENT = "swap-wizard-panel"
